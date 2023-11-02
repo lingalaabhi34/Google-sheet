@@ -7,6 +7,12 @@ const placeholdername =  document.querySelector("#activecell");
 const fontsizeinput = document.querySelector("#fontsize");
 const fontfamilyinput =document.querySelector("#fontfamily");
 const form = document.querySelector("#form");
+const copy = document.querySelector(".copy");
+const cut = document.querySelector(".cut");
+const paste = document.querySelector(".paste");
+cut.addEventListener('click',onCut());
+copy.addEventListener("click",onCopy());
+paste.addEventListener("click",onPaste());
 const defaultproperties = {
     fontFamily: 'sans',
     fontSize: 16,
@@ -22,6 +28,8 @@ const defaultproperties = {
 let activeelement = null;
 
 const state ={};
+
+
 function exportData() {
     let fileData = JSON.stringify(state);
     let blob = new Blob([fileData], { type: "application/json" })
@@ -42,6 +50,7 @@ function onCellFocus(event){
     else{
         resetoptions(defaultproperties);
     }
+   
 }
 function resetoptions(optionsState) {
   
@@ -74,6 +83,47 @@ function onFormChange() {
     applyStylesToCell(currentState);
     state[activeelement.id] = { ...currentState, value: activeelement.innerText };
 }
+
+function onCopy(event) {
+    event.preventDefault();
+    if (!activeelement) {
+        alert("Please select a cell to copy");
+        return;
+    }
+    let copyText = activeelement.innerText;
+    let textArea = document.createElement("textarea");
+    textArea.value = copyText;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand("Copy");
+    textArea.remove();
+}
+
+function onPaste(event) {
+    event.preventDefault();
+    let pasteText = event.clipboardData.getData("text/plain");
+    if (activeelement) {
+        activeelement.innerText = pasteText;
+        onFormChange();
+    }
+}
+
+function onCut(event) {
+    event.preventDefault();
+    if (!activeelement) {
+        alert("Please select a cell to cut");
+        return;
+    }
+    let cutText = activeelement.innerText;
+    let textArea = document.createElement("textarea");
+    textArea.value = cutText;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand("Cut");
+    textArea.remove();
+    onFormChange();
+}  
+
 function applyStylesToCell(styleObject) {
     activeelement.style.fontSize = `${styleObject.fontSize}px`;
     activeelement.style.fontFamily = styleObject.fontFamily;
@@ -126,7 +176,6 @@ function buildMainSection() {
         createRow(i);
     }
 }
-
 
 createHeaderCells();
 createSerialNumberCells();
